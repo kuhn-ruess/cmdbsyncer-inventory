@@ -1,8 +1,18 @@
 # Example inventory configuration for cmdbsyncer_inventory plugin
-# 
+#
 # Usage: ansible-inventory -i example-inventory.yml --list
 
+# ---- Local mode (Syncer on the same host as the Ansible control node) ----
+# plugin: cmdbsyncer_inventory
+# mode: local                 # default
+# provider: ansible           # default — name of a registered Syncer provider
+# # cmdbsyncer_bin: cmdbsyncer  # optional override of the CLI binary path
+
+# ---- HTTP mode (remote Syncer) ----
 plugin: cmdbsyncer_inventory
+mode: http
+provider: ansible
 api_url: https://your-cmdbsyncer-instance.com
 # username: your_username  # Optional - use CMDBSYNCER_APIUSER env var instead
 # password: your_password  # Optional - use CMDBSYNCER_APIPASSWORD env var instead
+# verify_ssl: true

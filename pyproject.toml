@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cmdbsyncer-inventory"
-version = "0.1.4"
+version = "0.2.0"
 authors = [
     {name = "Bastian Kuhn", email = "bastian.kuhn@kuhn-ruess.de"},
 ]

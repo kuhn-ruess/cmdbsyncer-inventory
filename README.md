@@ -54,44 +54,60 @@ python -m cmdbsyncer_inventory
 
 ## Usage
 
-After installation and running `python -m cmdbsyncer_inventory`, the plugin is automatically available to Ansible. You just need to:
+After installation and running `python -m cmdbsyncer_inventory`, the plugin is available to Ansible in two transport modes:
 
-1. **Create an inventory configuration file** (e.g., `inventory.yml`):
+- **`local`** (default): shells out to the local `cmdbsyncer` CLI. Use this when the Ansible control node and the Syncer run on the same host — no auth, no HTTP, fastest.
+- **`http`**: GETs `/api/v1/inventory/ansible/<provider>` from a remote Syncer over HTTPS. Use this from a separate Ansible control node.
+
+### Local mode
 
 ```yaml
+# inventory.yml
 plugin: cmdbsyncer_inventory
-api_url: https://your-cmdbsyncer-instance.com
-username: your_username  # Optional if using environment variables
-password: your_password  # Optional if using environment variables
+mode: local         # default — can be omitted
+provider: ansible   # default — names a provider registered in the Syncer
+# cmdbsyncer_bin: /opt/cmdbsyncer/cmdbsyncer    # optional override
 ```
 
-2. **Set environment variables** (recommended for credentials):
+```bash
+ansible-inventory -i inventory.yml --list
+ansible-playbook -i inventory.yml your-playbook.yml
+```
+
+The Syncer's UI runner sets `CMDBSYNCER_INVENTORY_PROVIDER` per-playbook based on its manifest, so the same inventory YAML works for every dispatched playbook.
+
+### HTTP mode
+
+```yaml
+# inventory.yml
+plugin: cmdbsyncer_inventory
+mode: http
+provider: ansible
+api_url: https://your-cmdbsyncer-instance.com
+# username / password optional — prefer env vars
+```
 
 ```bash
 export CMDBSYNCER_APIUSER="your_username"
 export CMDBSYNCER_APIPASSWORD="your_password"
-```
 
-3. **Use with ansible commands**:
-
-```bash
-# Test the inventory
 ansible-inventory -i inventory.yml --list
-
-# Run playbooks
-ansible-playbook -i inventory.yml your-playbook.yml
 ```
-
-**Note**: No `ansible.cfg` configuration needed after automatic installation!
 
 ## Configuration Options
 
-| Option | Required | Type | Description |
-|--------|----------|------|-------------|
-| `plugin` | Yes | string | Must be `cmdbsyncer_inventory` |
-| `api_url` | Yes | string | URL to your CMDBSyncer instance |
-| `username` | No | string | API username (can use `CMDBSYNCER_APIUSER` env var) |
-| `password` | No | string | API password (can use `CMDBSYNCER_APIPASSWORD` env var) |
+| Option | Required | Type | Default | Description |
+|--------|----------|------|---------|-------------|
+| `plugin` | Yes | string | — | Must be `cmdbsyncer_inventory` |
+| `mode` | No | string | `local` | `local` or `http` — see above |
+| `provider` | No | string | `ansible` | Name of a provider registered in the Syncer's inventory registry (e.g. `ansible`, `cmk_sites`) |
+| `cmdbsyncer_bin` | No | string | `cmdbsyncer` | Path to the cmdbsyncer CLI (local mode only) |
+| `api_url` | http only | string | — | Syncer base URL (http mode only) |
+| `username` | No | string | — | API username (http mode; falls back to `CMDBSYNCER_APIUSER`) |
+| `password` | No | string | — | API password (http mode; falls back to `CMDBSYNCER_APIPASSWORD`) |
+| `verify_ssl` | No | bool | `true` | Verify TLS certificates (http mode only) |
+
+Both `mode` and `provider` may also be set via env vars (`CMDBSYNCER_INVENTORY_MODE`, `CMDBSYNCER_INVENTORY_PROVIDER`); env wins over the YAML so the same inventory file works for many playbooks.
 
 ## Example Output
 
