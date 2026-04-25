@@ -4,7 +4,7 @@ Ansible dynamic inventory plugin for the CMDB Syncer.
 
 Two modes:
 
-- ``local`` (default): shells out to ``cmdbsyncer inventory ansible
+- ``local`` (default): shells out to ``cmdbsyncer ansible inventory
   <provider> --list`` against the Syncer binary on the same host.
   Used when the playbook runs on the Syncer itself — no HTTP, no auth,
   fast.
@@ -127,7 +127,7 @@ class InventoryModule(BaseInventoryPlugin):
         # Allow `cmdbsyncer_bin: cmdbsyncer` to work even when only a
         # relative ./cmdbsyncer is on disk.
         resolved = shutil.which(binary) or binary
-        cmd = [resolved, 'inventory', 'ansible', provider, '--list']
+        cmd = [resolved, 'ansible', 'inventory', provider, '--list']
         display.vvv(f"cmdbsyncer_inventory: local exec {' '.join(cmd)}")
         try:
             proc = subprocess.run(
